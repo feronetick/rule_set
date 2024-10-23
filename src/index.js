@@ -61,7 +61,8 @@ function createFileSource(fileConfig) {
                 delimiter: fileConfig.delimiter,
                 removeHeader: fileConfig.remove_header,
                 commentPrefixes: fileConfig.comment_prefixes,
-                fields: fileConfig.fields
+                fields: fileConfig.fields,
+                debug: fileConfig.debug || false,
             });
 
         case 'sing-box':

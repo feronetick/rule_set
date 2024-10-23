@@ -2,11 +2,12 @@ import FileSource from './file.js';
 import { Rule, RuleSet } from '../rules/rules.js';
 
 export default class CsvSource extends FileSource {
-    constructor(path, { delimiter = ',', removeHeader = false, commentPrefixes = ['#'], fields }) {
+    constructor(path, { delimiter = ',', removeHeader = false, commentPrefixes = ['#'], debug = false, fields }) {
         super(path);
         this.delimiter = delimiter;
         this.removeHeader = removeHeader;
         this.commentPrefixes = commentPrefixes;
+        this.debug = debug;
         this.fields = fields;
     }
 
@@ -49,6 +50,10 @@ export default class CsvSource extends FileSource {
         }
 
         console.log(`csv file ${this.path} parsed`, parsed);
+
+        if (this.debug) {
+            console.log(rules);
+        }
 
         return new RuleSet(rules);
     }

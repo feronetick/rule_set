@@ -148,7 +148,6 @@ async function processRules() {
         }
       }
 
-      console.log(source.type);
       if (source.type == 'text' || source.type == 'json' || source.type == 'csv') {
         const filesContents = await readAllFilesContentsByUrls(source.urls);
         for (const fileContent of filesContents) {

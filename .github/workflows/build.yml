@@ -52,4 +52,4 @@ jobs:
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
         commit_message: Update rule sets
-        file_pattern: '*.srs *.lock'
+        file_pattern: '*.srs'

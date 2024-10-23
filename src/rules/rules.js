@@ -6,11 +6,17 @@ export class Rule {
         this.domain_regex = [];
         this.ip_cidr = [];
 
-        domain.forEach(value => this.addDomain(value));
-        domain_suffix.forEach(value => this.addDomainSuffix(value));
-        domain_keyword.forEach(value => this.addDomainKeyword(value));
-        domain_regex.forEach(value => this.addDomainRegex(value));
-        ip_cidr.forEach(value => this.addIpCidr(value));
+        const normalizedDomain = Array.isArray(domain) ? domain : [domain];
+        const normalizedDomainSuffix = Array.isArray(domain_suffix) ? domain_suffix : [domain_suffix];
+        const normalizedDomainKeyword = Array.isArray(domain_keyword) ? domain_keyword : [domain_keyword];
+        const normalizedDomainRegex = Array.isArray(domain_regex) ? domain_regex : [domain_regex];
+        const normalizedIpCidr = Array.isArray(ip_cidr) ? ip_cidr : [ip_cidr];
+
+        normalizedDomain.forEach(value => this.addDomain(value));
+        normalizedDomainSuffix.forEach(value => this.addDomainSuffix(value));
+        normalizedDomainKeyword.forEach(value => this.addDomainKeyword(value));
+        normalizedDomainRegex.forEach(value => this.addDomainRegex(value));
+        normalizedIpCidr.forEach(value => this.addIpCidr(value));
     }
 
     addDomain(value) {

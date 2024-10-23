@@ -30,7 +30,7 @@ export default class ZipSource extends FileSource {
             }
         }
 
-        const allRules = new RuleSet();
+        const allRules = [];
 
         for (const source of this.files) {
             source.path = join(baseDir, source.path);
@@ -39,6 +39,6 @@ export default class ZipSource extends FileSource {
 
         }
 
-        return allRules;
+        return new RuleSet(...allRules);
     }
 }

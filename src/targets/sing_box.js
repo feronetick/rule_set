@@ -19,8 +19,6 @@ export default class SingBoxTarget extends Target {
             }
         }
 
-        console.log(`Saving ${this.path}`, ruleSet);
-
         const content = JSON.stringify(new SingBoxRuleSet(ruleSet), null, 2);
         await fs.writeFile(this.path, content);
     }

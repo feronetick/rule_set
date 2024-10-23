@@ -40,7 +40,7 @@ export default class GitHubReleaseAssetSource extends Source {
 
         }
 
-        return new RuleSet(allRules);
+        return new RuleSet(...allRules);
     }
 
     replacePlaceholders(pattern, text, fileName) {

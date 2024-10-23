@@ -52,9 +52,9 @@ export default class CsvSource extends FileSource {
         console.log(`csv file ${this.path} parsed`, parsed);
 
         if (this.debug) {
-            console.log(rules);
+            console.log(new RuleSet(...rules));
         }
 
-        return new RuleSet(rules);
+        return new RuleSet(...rules);
     }
 }

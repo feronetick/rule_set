@@ -73,13 +73,6 @@ function createFileSource(fileConfig) {
                 const nestedSources = fileConfig.files.map(createNestedFileSource);
                 return new ZipSource(fileConfig.path || '', nestedSources);
             }
-        case 'text':
-            return new CsvSource(fileConfig.path || '', {
-                delimiter: '\n',
-                removeHeader: fileConfig.remove_header,
-                commentPrefixes: fileConfig.comment_prefixes,
-                fields: { domain_suffix: 0 }
-            });
         default:
             console.warn(`Unknown file type: ${fileConfig.type}`);
             return null;
@@ -94,12 +87,12 @@ export default async function (config) {
     const sourceCollections = await parseConfiguration(config);
 
     for (const [targetName, sources] of Object.entries(sourceCollections)) {
-        const combinedRuleSet = new RuleSet();
+        let combinedRules = [];
 
         for (const source of sources) {
             try {
                 const ruleSet = await source.execute();
-                combinedRuleSet.push(...ruleSet);
+                combinedRules.push(...ruleSet);
             } catch (err) {
                 console.error(`Error processing ${JSON.stringify(source)}: ${err.message}`);
             }
@@ -110,7 +103,7 @@ export default async function (config) {
         const target = new SingBoxRuleSetTarget(outputFilePath);
 
         try {
-            await target.save(combinedRuleSet);
+            await target.save(new RuleSet(...combinedRules));
             console.log(`Saved ${targetName} to ${outputFilePath}`);
         } catch (err) {
             console.error(`Failed to save ${targetName}: ${err.message}`);

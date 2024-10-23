@@ -1,8 +1,8 @@
-const Builder = require('./src/builder.js');
+import build from './src/index.js';
 
-const builder = new Builder(JSON.parse(process.env.CONFIG));
+const config = JSON.parse(process.env.CONFIG);
 
-builder.processRules().catch(error => {
+build(config).catch(error => {
   console.error('Fatal error:', error);
   process.exit(1);
 });

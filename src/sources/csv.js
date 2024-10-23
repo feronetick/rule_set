@@ -15,6 +15,7 @@ export default class CsvSource extends FileSource {
         const lines = content.split('\n');
 
         const rules = [];
+        const parsed = {};
 
         let startIndex = 0;
 
@@ -39,12 +40,15 @@ export default class CsvSource extends FileSource {
             for (const [field, index] of Object.entries(this.fields)) {
                 const value = columns[index];
                 if (value) {
+                    parsed[field] = (parsed[field] || 0) + 1;
                     rule.addValue(field, value);
                 }
             }
 
             rules.push(rule);
         }
+
+        console.log(`csv file ${this.path} parsed`, parsed);
 
         return new RuleSet(rules);
     }

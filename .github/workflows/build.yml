@@ -1,0 +1,55 @@
+name: Build
+
+on:
+  schedule:
+    - cron: '0 0 * * *' 
+  workflow_dispatch: 
+
+jobs:
+  update-and-convert:
+    runs-on: ubuntu-latest
+    steps: 
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Get config from private repo
+      run: |
+        curl -H "Authorization: token ${{ secrets.GH_PERSONAL_TOKEN }}" \
+              -H "Accept: application/vnd.github.v3.raw" \
+              ${{ secrets.GH_API_FILE_URL }} > config.json
+        echo "CONFIG<<EOF" >> $GITHUB_ENV
+        cat ./config.json >> $GITHUB_ENV
+        echo "EOF" >> $GITHUB_ENV
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v2
+      with:
+        node-version: '16'
+
+    - name: Install dependencies
+      run: npm install axios
+
+    - name: Process Rules
+      run: node process-rules.js
+
+    - name: Install sing-box
+      run: |
+        SING_BOX_VERSION=$(curl -s https://api.github.com/repos/SagerNet/sing-box/releases/latest | jq -r .tag_name)
+        curl -Lo sing-box.tar.gz "https://github.com/SagerNet/sing-box/releases/download/${SING_BOX_VERSION}/sing-box-${SING_BOX_VERSION/v/}-linux-amd64.tar.gz"
+        tar -xzf sing-box.tar.gz
+        sudo mv sing-box-*/sing-box /usr/local/bin/
+        rm -rf sing-box-* sing-box.tar.gz
+
+    - name: Convert to SRS
+      run: |
+        for file in *-rules.json; do
+          output="${file%.json}.srs"
+          echo "Converting $file to $output"
+          sing-box rule-set compile "$file" -o "$output"
+        done
+
+    - name: Commit and push if changed
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: Update rule sets
+        file_pattern: '*.srs package-lock.json'

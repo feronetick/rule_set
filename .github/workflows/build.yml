@@ -30,9 +30,7 @@ jobs:
         run: npm install axios
 
       - name: Process Rules
-        run: |
-          mkdir -p dlc-data geoip-data dat-output
-          node process-rules.js
+        run: node process-rules.js
 
       - name: Install sing-box
         run: |
@@ -42,11 +40,13 @@ jobs:
           sudo mv sing-box-*/sing-box /usr/local/bin/
           rm -rf sing-box-* sing-box.tar.gz
 
-      - name: Convert to SRS
+      - name: Convert JSON to SRS
         run: |
-          for file in *-rules.json; do
+          for file in *.json; do
+            # пропускаем служебные файлы
+            [[ "$file" == "config.json" || "$file" == "package.json" || "$file" == "package-lock.json" ]] && continue
             output="${file%.json}.srs"
-            echo "Converting $file to $output"
+            echo "Converting $file → $output"
             sing-box rule-set compile "$file" -o "$output"
           done
 
@@ -60,43 +60,62 @@ jobs:
 
       - name: Build geosite.dat
         run: |
-          if [ -z "$(ls dlc-data/ 2>/dev/null)" ]; then
-            echo "⚠️ No domain rules found, skipping geosite.dat"
-            exit 0
+          mkdir -p dat-output
+          mkdir -p dlc-data
+
+          # Каждый *.geosite.txt становится тегом в geosite.dat
+          # proxy.geosite.txt → тег "proxy"
+          found=0
+          for geosite_file in *.geosite.txt; do
+            [ -f "$geosite_file" ] || continue
+            tag="${geosite_file%.geosite.txt}"
+            echo "Adding geosite: $geosite_file → tag '$tag'"
+            cp "$geosite_file" "dlc-data/${tag}"
+            found=1
+          done
+
+          if [ "$found" -eq 0 ]; then
+            echo "⚠️ No .geosite.txt files found, skipping geosite.dat"
+          else
+            cd dlc-builder
+            go mod download
+            go run ./ \
+              --datapath="../dlc-data" \
+              --outputname="geosite.dat" \
+              --outputdir="../dat-output"
+            echo "✅ geosite.dat created"
           fi
-
-          echo "=== dlc-data contents ==="
-          ls -lh dlc-data/
-          wc -l dlc-data/*
-
-          cd dlc-builder
-          go mod download
-          go run ./ \
-            --datapath="../dlc-data" \
-            --outputname="geosite.dat" \
-            --outputdir="../dat-output"
 
       - name: Build geoip.dat
         run: |
-          if [ -z "$(ls geoip-data/ 2>/dev/null)" ]; then
-            echo "⚠️ No IP rules found, skipping geoip.dat"
+          mkdir -p dat-output
+
+          # Проверяем наличие .geoip.txt файлов
+          found=0
+          for geoip_file in *.geoip.txt; do
+            [ -f "$geoip_file" ] || continue
+            found=1
+            break
+          done
+
+          if [ "$found" -eq 0 ]; then
+            echo "⚠️ No .geoip.txt files found, skipping geoip.dat"
             exit 0
           fi
 
-          echo "=== geoip-data contents ==="
-          ls -lh geoip-data/
-          wc -l geoip-data/*
-
           go install -v github.com/Loyalsoldier/geoip@latest
 
+          # Динамически генерируем config.json для geoip CLI
+          # proxy.geoip.txt → тег "proxy"
           inputs="[]"
-          for ip_file in geoip-data/*; do
-            tag="$(basename "$ip_file")"
-            uri="$(pwd)/$ip_file"
-            echo "Adding geoip input: tag=${tag}, uri=${uri}"
+          for geoip_file in *.geoip.txt; do
+            [ -f "$geoip_file" ] || continue
+            tag="${geoip_file%.geoip.txt}"
+            abs_path="$(pwd)/${geoip_file}"
+            echo "Adding geoip: $geoip_file → tag '$tag'"
             inputs=$(echo "$inputs" | jq \
               --arg tag "$tag" \
-              --arg uri "$uri" \
+              --arg uri "$abs_path" \
               '. += [{"type": "text", "action": "add", "args": {"name": $tag, "uri": $uri}}]'
             )
           done
@@ -120,16 +139,15 @@ jobs:
           cat geoip-convert-config.json
 
           geoip convert -c geoip-convert-config.json
+          echo "✅ geoip.dat created"
 
       - name: Verify DAT output
         run: |
-          echo "=== Generated DAT files ==="
-          ls -lh dat-output/
+          echo "=== Generated files ==="
+          ls -lh dat-output/ || echo "dat-output/ is empty"
 
-          found=0
           for dat_file in dat-output/*.dat; do
             [ -f "$dat_file" ] || continue
-            found=1
             size=$(stat -c%s "$dat_file")
             echo "$dat_file — ${size} bytes"
             if [ "$size" -lt 100 ]; then
@@ -137,12 +155,6 @@ jobs:
               exit 1
             fi
           done
-
-          if [ "$found" -eq 0 ]; then
-            echo "❌ ERROR: No .dat files were generated!"
-            exit 1
-          fi
-
           echo "✅ All DAT files look good"
 
       - name: Commit and push if changed

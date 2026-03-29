@@ -106,6 +106,8 @@ export default async function (config) {
 
         try {
             await singBoxTarget.save(new RuleSet(...combinedRules));
+            await v2RayGeoipTarget.save(new RuleSet(...combinedRules));
+            await v2RayGeositeTarget.save(new RuleSet(...combinedRules));
         } catch (err) {
             console.error(`Failed to save ${targetName}: ${err.message}`);
         }

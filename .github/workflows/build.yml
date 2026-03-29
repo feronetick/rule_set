@@ -48,7 +48,15 @@ jobs:
             sing-box rule-set compile "$file" -o "$output"
           done
 
-      # ── Новые шаги ────────────────────────────────────────────────────────
+      - name: Print decompiled SRS rules
+        run: |
+          for srs_file in *-rules.srs; do
+            echo "========================================"
+            echo "=== $srs_file ==="
+            echo "========================================"
+            sing-box rule-set decompile "$srs_file"
+            echo ""
+          done
 
       - name: Setup Go
         uses: actions/setup-go@v5
@@ -64,8 +72,6 @@ jobs:
         run: |
           mkdir -p dat-output
 
-          # Динамически собираем массив "input" из всех *.srs файлов
-          # Каждый файл "proxy-rules.srs" получает имя (name) "proxy"
           inputs="[]"
           for srs_file in *-rules.srs; do
             tag="${srs_file%-rules.srs}"
@@ -85,7 +91,6 @@ jobs:
             )
           done
 
-          # Собираем итоговый config.json для geoip CLI
           jq -n \
             --argjson inputs "$inputs" \
             --arg outdir "$(pwd)/dat-output" \
@@ -124,8 +129,6 @@ jobs:
             fi
           done
           echo "✅ All DAT files look good"
-
-      # ─────────────────────────────────────────────────────────────────────
 
       - name: Commit and push if changed
         uses: stefanzweifel/git-auto-commit-action@v4

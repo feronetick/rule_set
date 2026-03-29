@@ -7,15 +7,25 @@ export class V2RayGeositeTarget extends Target {
         this.path = path;
     }
 
+    _isValidForV2Ray(domain) {
+        if (domain.includes('_')) return false;
+        if (!/^[a-zA-Z0-9.\-*]+$/.test(domain)) return false;
+        return true;
+    }
+
+
     async save(ruleSet) {
         const lines = [];
+        let skipped = 0;
 
         for (const rule of ruleSet) {
             for (const d of rule.domain_suffix ?? []) {
-                lines.push(d);
+                if (this._isValidForV2Ray(d)) lines.push(d);
+                else skipped++;
             }
             for (const d of rule.domain ?? []) {
-                lines.push(`full:${d}`);
+                if (this._isValidForV2Ray(d)) lines.push(`full:${d}`);
+                else skipped++;
             }
             for (const d of rule.domain_keyword ?? []) {
                 lines.push(`keyword:${d}`);
@@ -26,7 +36,7 @@ export class V2RayGeositeTarget extends Target {
         }
 
         await fs.writeFile(this.path, lines.join('\n'), 'utf-8');
-        console.log(`[V2RayGeositeTarget] Written ${lines.length} rules → ${this.path}`);
+        console.log(`[V2RayGeositeTarget] Written ${lines.length} rules → ${this.path} (skipped ${skipped} invalid)`);
     }
 }
 

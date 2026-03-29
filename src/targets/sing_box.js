@@ -13,5 +13,6 @@ export default class SingBoxTarget extends Target {
         singBoxRuleSet.printCount();
         const content = JSON.stringify(singBoxRuleSet, null, 2);
         await fs.writeFile(this.path, content);
+        console.log(`[SingBoxTarget] Written rules → ${this.path}`);
     }
 }

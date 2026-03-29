@@ -30,7 +30,9 @@ jobs:
         run: npm install axios
 
       - name: Process Rules
-        run: node process-rules.js
+        run: |
+          mkdir -p dlc-data geoip-data dat-output
+          node process-rules.js
 
       - name: Install sing-box
         run: |
@@ -48,48 +50,86 @@ jobs:
             sing-box rule-set compile "$file" -o "$output"
           done
 
-      # ── Новые шаги ────────────────────────────────────────────────────────
-
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
           go-version: 'stable'
 
-      - name: Install v2dat CLI
+      - name: Clone domain-list-community builder
+        run: git clone --depth=1 https://github.com/v2fly/domain-list-community.git dlc-builder
+
+      - name: Build geosite.dat
         run: |
-          # v2dat — правильный инструмент для конвертации доменных SRS → geosite.dat
-          go install github.com/urlesistiana/v2dat@latest
-          v2dat -h
-
-      - name: Convert SRS to geosite.dat
-        run: |
-          mkdir -p dat-output
-
-          # Собираем аргументы вида "tag:filepath" для каждого .srs файла
-          # proxy-rules.srs → тег "proxy"
-          PACK_ARGS=""
-          for srs_file in *-rules.srs; do
-            tag="${srs_file%-rules.srs}"
-            echo "Adding: tag=${tag}, file=${srs_file}"
-            PACK_ARGS="${PACK_ARGS} -s ${tag}:${srs_file}"
-          done
-
-          if [ -z "$PACK_ARGS" ]; then
-            echo "⚠️ No .srs files found, skipping"
+          if [ -z "$(ls dlc-data/ 2>/dev/null)" ]; then
+            echo "⚠️ No domain rules found, skipping geosite.dat"
             exit 0
           fi
 
-          echo "Running: v2dat pack site -o dat-output/geosite.dat ${PACK_ARGS}"
-          v2dat pack site -o dat-output/geosite.dat $PACK_ARGS
-          echo "✅ geosite.dat created"
+          echo "=== dlc-data contents ==="
+          ls -lh dlc-data/
+          wc -l dlc-data/*
+
+          cd dlc-builder
+          go mod download
+          go run ./ \
+            --datapath="../dlc-data" \
+            --outputname="geosite.dat" \
+            --outputdir="../dat-output"
+
+      - name: Build geoip.dat
+        run: |
+          if [ -z "$(ls geoip-data/ 2>/dev/null)" ]; then
+            echo "⚠️ No IP rules found, skipping geoip.dat"
+            exit 0
+          fi
+
+          echo "=== geoip-data contents ==="
+          ls -lh geoip-data/
+          wc -l geoip-data/*
+
+          go install -v github.com/Loyalsoldier/geoip@latest
+
+          inputs="[]"
+          for ip_file in geoip-data/*; do
+            tag="$(basename "$ip_file")"
+            uri="$(pwd)/$ip_file"
+            echo "Adding geoip input: tag=${tag}, uri=${uri}"
+            inputs=$(echo "$inputs" | jq \
+              --arg tag "$tag" \
+              --arg uri "$uri" \
+              '. += [{"type": "text", "action": "add", "args": {"name": $tag, "uri": $uri}}]'
+            )
+          done
+
+          jq -n \
+            --argjson inputs "$inputs" \
+            --arg outdir "$(pwd)/dat-output" \
+            '{
+              "input": $inputs,
+              "output": [{
+                "type": "v2rayGeoIPDat",
+                "action": "output",
+                "args": {
+                  "outputDir": $outdir,
+                  "outputName": "geoip.dat"
+                }
+              }]
+            }' > geoip-convert-config.json
+
+          echo "=== geoip-convert-config.json ==="
+          cat geoip-convert-config.json
+
+          geoip convert -c geoip-convert-config.json
 
       - name: Verify DAT output
         run: |
           echo "=== Generated DAT files ==="
           ls -lh dat-output/
 
+          found=0
           for dat_file in dat-output/*.dat; do
             [ -f "$dat_file" ] || continue
+            found=1
             size=$(stat -c%s "$dat_file")
             echo "$dat_file — ${size} bytes"
             if [ "$size" -lt 100 ]; then
@@ -97,9 +137,13 @@ jobs:
               exit 1
             fi
           done
-          echo "✅ All DAT files look good"
 
-      # ─────────────────────────────────────────────────────────────────────
+          if [ "$found" -eq 0 ]; then
+            echo "❌ ERROR: No .dat files were generated!"
+            exit 1
+          fi
+
+          echo "✅ All DAT files look good"
 
       - name: Commit and push if changed
         uses: stefanzweifel/git-auto-commit-action@v4

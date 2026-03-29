@@ -46,18 +46,12 @@ export class V2RayGeoipTarget extends Target {
         this.path = path;
     }
 
-    _ensurePrefix(cidr) {
-        if (cidr.includes('/')) return cidr;
-        const isIPv6 = cidr.includes(':');
-        return isIPv6 ? `${cidr}/128` : `${cidr}/32`;
-    }
-
     async save(ruleSet) {
         const lines = [];
 
         for (const rule of ruleSet) {
             for (const cidr of rule.ip_cidr ?? []) {
-                lines.push(this._ensurePrefix(cidr));
+                lines.push(cidr);
             }
         }
 

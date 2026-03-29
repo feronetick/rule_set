@@ -106,8 +106,12 @@ jobs:
         inputs="[]"
         for geoip_file in *.geoip.txt; do
           [ -f "$geoip_file" ] || continue
+
+          # proxy-ext.geoip.txt → proxy_ext  (нижний регистр, дефисы → подчёркивания)
           tag="${geoip_file%.geoip.txt}"
+          tag=$(echo "$tag" | tr '[:upper:]' '[:lower:]' | tr '-' '_')
           abs_path="$(pwd)/${geoip_file}"
+
           echo "Adding geoip: $geoip_file → tag '$tag'"
           inputs=$(echo "$inputs" | jq \
             --arg tag "$tag" \

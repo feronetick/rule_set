@@ -100,7 +100,7 @@ export default async function (config) {
         }
 
         // Save the combined rule set to the appropriate target
-        const singBoxTarget = new SingBoxRuleSetTarget(`${targetName}.json`);
+        const singBoxTarget = new SingBoxRuleSetTarget(`${targetName}.singbox.json`);
         const v2RayGeoipTarget = new V2RayGeoipTarget(`${targetName}.geoip.txt`);
         const v2RayGeositeTarget = new V2RayGeositeTarget(`${targetName}.geosite.txt`);
 

@@ -5,6 +5,7 @@ import ZipSource from './sources/zip.js';
 import UrlSource from './sources/url.js';
 import GitHubReleaseAssetSource from './sources/github_release_asset.js';
 import SingBoxRuleSetTarget from './targets/sing_box.js';
+import { V2RayGeositeTarget, V2RayGeoipTarget } from './targets/V2RayTarget.js';
 import { RuleSet } from './rules/rules.js';
 
 async function parseConfiguration(config) {
@@ -99,12 +100,12 @@ export default async function (config) {
         }
 
         // Save the combined rule set to the appropriate target
-        const outputFilePath = `${targetName}.json`;
-        const target = new SingBoxRuleSetTarget(outputFilePath);
+        const singBoxTarget = new SingBoxRuleSetTarget(`${targetName}.json`);
+        const v2RayGeoipTarget = new V2RayGeoipTarget(`${targetName}.geoip.txt`);
+        const v2RayGeositeTarget = new V2RayGeositeTarget(`${targetName}.geosite.txt`);
 
         try {
-            await target.save(new RuleSet(...combinedRules));
-            console.log(`Saved ${targetName} to ${outputFilePath}`);
+            await singBoxTarget.save(new RuleSet(...combinedRules));
         } catch (err) {
             console.error(`Failed to save ${targetName}: ${err.message}`);
         }

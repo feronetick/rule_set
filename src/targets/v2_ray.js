@@ -46,13 +46,24 @@ export class V2RayGeoipTarget extends Target {
         this.path = path;
     }
 
+    _ensurePrefix(cidr) {
+        if (cidr.includes('/')) return cidr;
+        const isIPv6 = cidr.includes(':');
+        return isIPv6 ? `${cidr}/128` : `${cidr}/32`;
+    }
+
     async save(ruleSet) {
         const lines = [];
 
         for (const rule of ruleSet) {
             for (const cidr of rule.ip_cidr ?? []) {
-                lines.push(cidr);
+                lines.push(this._ensurePrefix(cidr));
             }
+        }
+
+        if (lines.length === 0) {
+            console.log(`[V2RayGeoipTarget] No IP rules, skipping ${this.path}`);
+            return;
         }
 
         await fs.writeFile(this.path, lines.join('\n'), 'utf-8');

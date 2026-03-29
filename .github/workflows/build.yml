@@ -42,8 +42,8 @@ jobs:
 
     - name: Convert to SRS
       run: |
-        for file in *-rules.json; do
-          output="${file%.singbox.json}.srs"
+        for file in *-rules.singbox.json; do
+          output="${file%.json}.srs"
           echo "Converting $file to $output"
           sing-box rule-set compile "$file" -o "$output"
         done

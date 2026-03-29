@@ -2,55 +2,107 @@ name: Build
 
 on:
   schedule:
-    - cron: '0 0 * * *' 
-  workflow_dispatch: 
+    - cron: '0 0 * * *'
+  workflow_dispatch:
 
 jobs:
   update-and-convert:
     runs-on: ubuntu-latest
-    steps: 
-    - name: Checkout repository
-      uses: actions/checkout@v2
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Get config from private repo
-      run: |
-        curl -H "Authorization: token ${{ secrets.GH_PERSONAL_TOKEN }}" \
-              -H "Accept: application/vnd.github.v3.raw" \
-              ${{ secrets.GH_API_FILE_URL }} > config.json
-        echo "CONFIG<<EOF" >> $GITHUB_ENV
-        cat ./config.json >> $GITHUB_ENV
-        echo "EOF" >> $GITHUB_ENV
+      - name: Get config from private repo
+        run: |
+          curl -H "Authorization: token ${{ secrets.GH_PERSONAL_TOKEN }}" \
+                -H "Accept: application/vnd.github.v3.raw" \
+                ${{ secrets.GH_API_FILE_URL }} > config.json
+          echo "CONFIG<<EOF" >> $GITHUB_ENV
+          cat ./config.json >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v2
-      with:
-        node-version: '16'
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
 
-    - name: Install dependencies
-      run: npm install axios
+      - name: Install dependencies
+        run: npm install axios
 
-    - name: Process Rules
-      run: node process-rules.js
+      - name: Process Rules
+        run: node process-rules.js
 
-    - name: Install sing-box
-      run: |
-        SING_BOX_VERSION=$(curl -s https://api.github.com/repos/SagerNet/sing-box/releases/latest | jq -r .tag_name)
-        curl -Lo sing-box.tar.gz "https://github.com/SagerNet/sing-box/releases/download/${SING_BOX_VERSION}/sing-box-${SING_BOX_VERSION/v/}-linux-amd64.tar.gz"
-        tar -xzf sing-box.tar.gz
-        sudo mv sing-box-*/sing-box /usr/local/bin/
-        rm -rf sing-box-* sing-box.tar.gz
+      - name: Install sing-box
+        run: |
+          SING_BOX_VERSION=$(curl -s https://api.github.com/repos/SagerNet/sing-box/releases/latest | jq -r .tag_name)
+          curl -Lo sing-box.tar.gz "https://github.com/SagerNet/sing-box/releases/download/${SING_BOX_VERSION}/sing-box-${SING_BOX_VERSION/v/}-linux-amd64.tar.gz"
+          tar -xzf sing-box.tar.gz
+          sudo mv sing-box-*/sing-box /usr/local/bin/
+          rm -rf sing-box-* sing-box.tar.gz
 
-    - name: Convert to SRS
-      run: |
-        for file in *-rules.json; do
-          output="${file%.json}.srs"
-          echo "Converting $file to $output"
-          cat $file
-          sing-box rule-set compile "$file" -o "$output"
-        done
+      - name: Convert to SRS
+        run: |
+          for file in *-rules.json; do
+            output="${file%.json}.srs"
+            echo "Converting $file to $output"
+            sing-box rule-set compile "$file" -o "$output"
+          done
 
-    - name: Commit and push if changed
-      uses: stefanzweifel/git-auto-commit-action@v4
-      with:
-        commit_message: Update rule sets
-        file_pattern: '*.srs package-lock.json'
+      # ── Новые шаги ────────────────────────────────────────────────────────
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+
+      - name: Install v2dat CLI
+        run: |
+          # v2dat — правильный инструмент для конвертации доменных SRS → geosite.dat
+          go install github.com/urlesistiana/v2dat@latest
+          v2dat -h
+
+      - name: Convert SRS to geosite.dat
+        run: |
+          mkdir -p dat-output
+
+          # Собираем аргументы вида "tag:filepath" для каждого .srs файла
+          # proxy-rules.srs → тег "proxy"
+          PACK_ARGS=""
+          for srs_file in *-rules.srs; do
+            tag="${srs_file%-rules.srs}"
+            echo "Adding: tag=${tag}, file=${srs_file}"
+            PACK_ARGS="${PACK_ARGS} -s ${tag}:${srs_file}"
+          done
+
+          if [ -z "$PACK_ARGS" ]; then
+            echo "⚠️ No .srs files found, skipping"
+            exit 0
+          fi
+
+          echo "Running: v2dat pack site -o dat-output/geosite.dat ${PACK_ARGS}"
+          v2dat pack site -o dat-output/geosite.dat $PACK_ARGS
+          echo "✅ geosite.dat created"
+
+      - name: Verify DAT output
+        run: |
+          echo "=== Generated DAT files ==="
+          ls -lh dat-output/
+
+          for dat_file in dat-output/*.dat; do
+            [ -f "$dat_file" ] || continue
+            size=$(stat -c%s "$dat_file")
+            echo "$dat_file — ${size} bytes"
+            if [ "$size" -lt 100 ]; then
+              echo "❌ ERROR: $dat_file is suspiciously small!"
+              exit 1
+            fi
+          done
+          echo "✅ All DAT files look good"
+
+      # ─────────────────────────────────────────────────────────────────────
+
+      - name: Commit and push if changed
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Update rule sets
+          file_pattern: '*.srs dat-output/*.dat package-lock.json'

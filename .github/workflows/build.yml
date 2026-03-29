@@ -43,16 +43,12 @@ jobs:
     - name: Convert to SRS
       run: |
         for file in *-rules.singbox.json; do
-          output="${file%.json}.srs"
-          echo "Converting $file to $output"
+          output="${file%.singbox.json}.srs"
+          echo "Converting $file → $output"
           sing-box rule-set compile "$file" -o "$output"
+          rm "$file"
+          echo "Removed $file"
         done
-
-    - name: Commit and push if changed
-      uses: stefanzweifel/git-auto-commit-action@v4
-      with:
-        commit_message: Update rule sets
-        file_pattern: '*.srs package-lock.json'
 
     - name: Setup Go
       uses: actions/setup-go@v5
@@ -154,3 +150,9 @@ jobs:
           fi
         done
         echo "✅ All DAT files look good"
+
+    - name: Commit and push if changed
+      uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: Update rule sets
+        file_pattern: '*.srs *.dat package-lock.json'

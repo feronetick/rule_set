@@ -58,7 +58,7 @@ jobs:
     - name: Clone domain-list-community builder
       run: git clone --depth=1 https://github.com/v2fly/domain-list-community.git dlc-builder
 
-    - name: Build geosite.dat
+    - name: Build site-rules.dat
       run: |
         mkdir -p dlc-data
 
@@ -78,12 +78,12 @@ jobs:
           go mod download
           go run ./ \
             --datapath="../dlc-data" \
-            --outputname="geosite.dat" \
+            --outputname="site-rules.dat" \
             --outputdir=".."
           echo "✅ geosite.dat created"
         fi
 
-    - name: Build geoip.dat
+    - name: Build ip-rules.dat
       run: |
         found=0
         for geoip_file in *.geoip.txt; do
@@ -105,7 +105,7 @@ jobs:
 
           # proxy-ext.geoip.txt → proxy_ext  (нижний регистр, дефисы → подчёркивания)
           tag="${geoip_file%.geoip.txt}"
-          tag=$(echo "$tag" | tr '[:upper:]' '[:lower:]' | tr '-' '_')
+          tag=$(echo "$tag" | tr '[:upper:]' '[:lower:]')
           abs_path="$(pwd)/${geoip_file}"
 
           echo "Adding geoip: $geoip_file → tag '$tag'"
@@ -126,7 +126,7 @@ jobs:
               "action": "output",
               "args": {
                 "outputDir": $outdir,
-                "outputName": "geoip.dat"
+                "outputName": "ip-rules.dat"
               }
             }]
           }' > geoip-convert-config.json

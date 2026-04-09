@@ -34,7 +34,7 @@ jobs:
   
     - name: Install sing-box
       run: |
-        SING_BOX_VERSION="v1.9.7"
+        SING_BOX_VERSION="v1.11.5"
         curl -Lo sing-box.tar.gz "https://github.com/SagerNet/sing-box/releases/download/${SING_BOX_VERSION}/sing-box-${SING_BOX_VERSION/v/}-linux-amd64.tar.gz"
         tar -xzf sing-box.tar.gz
         sudo mv sing-box-*/sing-box /usr/local/bin/

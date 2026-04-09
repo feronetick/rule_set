@@ -31,10 +31,10 @@ jobs:
 
     - name: Process Rules
       run: node process-rules.js
-
+  
     - name: Install sing-box
       run: |
-        SING_BOX_VERSION=$(curl -s https://api.github.com/repos/SagerNet/sing-box/releases/latest | jq -r .tag_name)
+        SING_BOX_VERSION="v1.11.4"
         curl -Lo sing-box.tar.gz "https://github.com/SagerNet/sing-box/releases/download/${SING_BOX_VERSION}/sing-box-${SING_BOX_VERSION/v/}-linux-amd64.tar.gz"
         tar -xzf sing-box.tar.gz
         sudo mv sing-box-*/sing-box /usr/local/bin/

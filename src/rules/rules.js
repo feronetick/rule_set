@@ -60,13 +60,12 @@ export class Rule {
     }
 
     _isValidDomain(domain) {
-        return domain &&
-            typeof domain === 'string' &&
-            domain.trim() !== '' &&
-            !domain.startsWith('0.0.0.0') &&
-            !domain.startsWith('127.0.0.1') &&
-            !domain.startsWith('::') &&
-            !domain.startsWith('::1');
+        if (!domain || typeof domain !== 'string' || domain.trim() === '') return false;
+        if (domain.startsWith('0.0.0.0') || domain.startsWith('127.0.0.1') ||
+            domain.startsWith('::') || domain.startsWith('::1')) return false;
+        // Каждая метка: буква/цифра, потом буквы/цифры/дефисы, потом буква/цифра
+        const labels = domain.split('.');
+        return labels.every(label => /^[a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?$/.test(label));
     }
 
     _isValidKeyword(keyword) {

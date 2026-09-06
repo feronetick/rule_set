@@ -36,6 +36,11 @@ export class Rule {
     }
 
     addDomainSuffix(value) {
+        // Adblock-style wildcard lists (for example HaGeZi) use *.example.com.
+        // domain_suffix already means the domain and every subdomain.
+        if (typeof value === 'string' && value.startsWith('*.')) {
+            value = value.slice(2);
+        }
         if (this._isValidDomain(value)) {
             this.domain_suffix.push(value);
         }

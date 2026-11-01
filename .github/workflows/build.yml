@@ -153,6 +153,11 @@ jobs:
         done
         echo "✅ All DAT files look good"
 
+    - name: Preserve reviewed Xray categories as independent SRS
+      run: |
+        cp categories/category-ads-all.json category-ads-all.singbox.json
+        cp categories/private-ips.json private-ips.singbox.json
+
     - name: Compile and verify SRS and write artifact manifest
       run: python3 scripts/compile_srs.py
 

@@ -1,5 +1,10 @@
 export class Rule {
-    constructor({ domain = [], domain_suffix = [], domain_keyword = [], domain_regex = [], ip_cidr = [] } = {}) {
+    constructor(input = {}) {
+        const allowed = ['domain', 'domain_suffix', 'domain_keyword', 'domain_regex', 'ip_cidr'];
+        if (Object.keys(input).some(key => !allowed.includes(key))) {
+            throw new Error('Unsupported rule fields; refusing to discard matching semantics');
+        }
+        const { domain = [], domain_suffix = [], domain_keyword = [], domain_regex = [], ip_cidr = [] } = input;
         this.domain = [];
         this.domain_suffix = [];
         this.domain_keyword = [];

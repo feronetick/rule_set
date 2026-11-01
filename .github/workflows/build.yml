@@ -5,6 +5,13 @@ on:
     - cron: '0 0 * * *' 
   workflow_dispatch: 
 
+permissions:
+  contents: write
+
+concurrency:
+  group: rule-set-publication
+  cancel-in-progress: false
+
 jobs:
   update-and-convert:
     runs-on: ubuntu-latest
@@ -14,20 +21,17 @@ jobs:
 
     - name: Get config from private repo
       run: |
-        curl -H "Authorization: token ${{ secrets.GH_PERSONAL_TOKEN }}" \
+        curl --fail --show-error --silent --location --retry 3 -H "Authorization: token ${{ secrets.GH_PERSONAL_TOKEN }}" \
               -H "Accept: application/vnd.github.v3.raw" \
               ${{ secrets.GH_API_FILE_URL }} > config.json
-        echo "CONFIG<<EOF" >> $GITHUB_ENV
-        cat ./config.json >> $GITHUB_ENV
-        echo "EOF" >> $GITHUB_ENV
 
     - name: Setup Node.js
       uses: actions/setup-node@v2
       with:
-        node-version: '16'
+        node-version: '22'
 
     - name: Install dependencies
-      run: npm install axios
+      run: npm ci
 
     - name: Process Rules
       run: node process-rules.js
@@ -35,20 +39,18 @@ jobs:
     - name: Install sing-box
       run: |
         SING_BOX_VERSION="v1.11.5"
-        curl -Lo sing-box.tar.gz "https://github.com/SagerNet/sing-box/releases/download/${SING_BOX_VERSION}/sing-box-${SING_BOX_VERSION/v/}-linux-amd64.tar.gz"
+        curl --fail --show-error --location --retry 3 -o sing-box.tar.gz "https://github.com/SagerNet/sing-box/releases/download/${SING_BOX_VERSION}/sing-box-${SING_BOX_VERSION/v/}-linux-amd64.tar.gz"
         tar -xzf sing-box.tar.gz
         sudo mv sing-box-*/sing-box /usr/local/bin/
         rm -rf sing-box-* sing-box.tar.gz
 
-    - name: Convert to SRS
+    - name: Test splitter and official sing-box round trips
       run: |
-        for file in *-rules.singbox.json; do
-          output="${file%.singbox.json}.srs"
-          echo "Converting $file → $output"
-          sing-box rule-set compile "$file" -o "$output"
-          rm "$file"
-          echo "Removed $file"
-        done
+        node --test tests/*.test.js
+        python3 -m unittest discover -s tests -v
+
+    - name: Derive proxy views from the same configuration
+      run: python3 scripts/split_rules.py
 
     - name: Setup Go
       uses: actions/setup-go@v5
@@ -151,8 +153,11 @@ jobs:
         done
         echo "✅ All DAT files look good"
 
+    - name: Compile and verify SRS and write artifact manifest
+      run: python3 scripts/compile_srs.py
+
     - name: Commit and push if changed
       uses: stefanzweifel/git-auto-commit-action@v4
       with:
         commit_message: Update rule sets
-        file_pattern: '*.srs *.dat package-lock.json'
+        file_pattern: '*.srs *.dat manifest.json'

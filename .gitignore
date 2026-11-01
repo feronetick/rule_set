@@ -4,3 +4,10 @@ node_modules
 *.csv
 *.json
 *.zip
+*.geosite.txt
+*.geoip.txt
+*.lst
+/hagezi-*.txt
+/ru-only.txt
+__pycache__/
+!manifest.json

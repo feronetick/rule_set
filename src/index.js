@@ -49,8 +49,7 @@ async function createSourceFromConfig(config) {
             }
         default:
             {
-                console.warn(`Unknown source type: ${config.type}`);
-                return null;
+                throw new Error(`Unknown source type: ${config.type}`);
             }
     }
 }
@@ -75,8 +74,7 @@ function createFileSource(fileConfig) {
                 return new ZipSource(fileConfig.path || '', nestedSources);
             }
         default:
-            console.warn(`Unknown file type: ${fileConfig.type}`);
-            return null;
+            throw new Error(`Unknown file type: ${fileConfig.type}`);
     }
 }
 
@@ -95,7 +93,7 @@ export default async function (config) {
                 const ruleSet = await source.execute();
                 combinedRules.push(...ruleSet);
             } catch (err) {
-                console.error(`Error processing ${JSON.stringify(source)}: ${err.message} ${err.stack}`);
+                throw new Error(`Source failed for ${targetName}: ${err.message}`);
             }
         }
 
@@ -109,7 +107,7 @@ export default async function (config) {
             await v2RayGeoipTarget.save(new RuleSet(...combinedRules));
             await v2RayGeositeTarget.save(new RuleSet(...combinedRules));
         } catch (err) {
-            console.error(`Failed to save ${targetName}: ${err.message}`);
+            throw new Error(`Failed to save ${targetName}: ${err.message}`);
         }
     }
 }

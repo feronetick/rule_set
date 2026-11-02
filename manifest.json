@@ -139,7 +139,7 @@
       ]
     }
   },
-  "builder_commit": "a9e32ba25de4582318ebb655c69b6690e1923e74",
+  "builder_commit": "a622af52de8825eaf0ef9be0e0feb6fa721e78d0",
   "compiler": "sing-box version 1.11.5",
   "schema_version": 1
 }

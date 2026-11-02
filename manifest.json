@@ -30,6 +30,21 @@
       "source_version": 1,
       "view": "combined"
     },
+    "category-ads-all.srs": {
+      "bytes": 1470824,
+      "category": "category-ads-all",
+      "counts": {
+        "domain": 0,
+        "domain_keyword": 0,
+        "domain_regex": 0,
+        "domain_suffix": 169750,
+        "ip_cidr": 0
+      },
+      "format": "sing-box-srs",
+      "sha256": "75e4be44158c963694f538f98c04c90df11fc630044519913f4cefc69754722f",
+      "source_version": 3,
+      "view": "combined"
+    },
     "ip-rules.dat": {
       "bytes": 9146,
       "format": "v2ray-geoip",
@@ -37,6 +52,21 @@
       "tags": [
         "proxy-rules"
       ]
+    },
+    "private-ips.srs": {
+      "bytes": 144,
+      "category": "private-ips",
+      "counts": {
+        "domain": 0,
+        "domain_keyword": 0,
+        "domain_regex": 0,
+        "domain_suffix": 0,
+        "ip_cidr": 18
+      },
+      "format": "sing-box-srs",
+      "sha256": "283138b577e2d5d3bf65d4eb56599100957283aec4122fe45163692ed9210d58",
+      "source_version": 3,
+      "view": "combined"
     },
     "proxy-domains.srs": {
       "bytes": 1114349,
@@ -109,7 +139,7 @@
       ]
     }
   },
-  "builder_commit": "eb5285f51ee2652e59d5d73973396a2d5b9aa4f7",
+  "builder_commit": "a9e32ba25de4582318ebb655c69b6690e1923e74",
   "compiler": "sing-box version 1.11.5",
   "schema_version": 1
 }

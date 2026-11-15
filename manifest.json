@@ -16,17 +16,17 @@
       "view": "combined"
     },
     "block-rules.srs": {
-      "bytes": 1917311,
+      "bytes": 2004182,
       "category": "block-rules",
       "counts": {
         "domain": 0,
         "domain_keyword": 0,
         "domain_regex": 0,
-        "domain_suffix": 226838,
+        "domain_suffix": 236098,
         "ip_cidr": 0
       },
       "format": "sing-box-srs",
-      "sha256": "86fc9080b8c27f49842ffe6cf934ee766a8744149750b7d34478d0a320d4276a",
+      "sha256": "e621109e75220d49de01eeeac9d6a17c3d677776ecec79eb8dc39130291682ca",
       "source_version": 1,
       "view": "combined"
     },
@@ -69,17 +69,17 @@
       "view": "combined"
     },
     "proxy-domains.srs": {
-      "bytes": 1059776,
+      "bytes": 1069959,
       "category": "proxy-rules",
       "counts": {
         "domain": 28,
         "domain_keyword": 0,
         "domain_regex": 4,
-        "domain_suffix": 155984,
+        "domain_suffix": 157519,
         "ip_cidr": 0
       },
       "format": "sing-box-srs",
-      "sha256": "4fd08a181acbfa034e5fcd09fd64386373cce483657e381684067631854f2422",
+      "sha256": "38adfec61b50a38743cd7ba6496629cf3ff4f6e0f0a8a62ae24ea4067a8de87c",
       "source_version": 1,
       "view": "domains-only"
     },
@@ -99,17 +99,17 @@
       "view": "ips-only"
     },
     "proxy-rules.srs": {
-      "bytes": 1120378,
+      "bytes": 1131938,
       "category": "proxy-rules",
       "counts": {
         "domain": 28,
         "domain_keyword": 0,
         "domain_regex": 4,
-        "domain_suffix": 155984,
+        "domain_suffix": 157519,
         "ip_cidr": 928
       },
       "format": "sing-box-srs",
-      "sha256": "b0145e59584497493f2fb3551c1b666b6cf6353b4d88a473bda8b0117a3cf8c3",
+      "sha256": "14fca49824196c945292f208793c45b3c8e6ab6d99325150ed8c6097d7ae0e15",
       "source_version": 1,
       "view": "combined"
     },
@@ -129,9 +129,9 @@
       "view": "combined"
     },
     "site-rules.dat": {
-      "bytes": 8737046,
+      "bytes": 9003026,
       "format": "v2ray-geosite",
-      "sha256": "61e689c08fb68b0d92ab74b0a1aa77f23fad412485171beefa1c8873de3e2375",
+      "sha256": "8b0ca77cd9dcb377f760149189694361ceaf484b3106236728ce96b3e06b0859",
       "tags": [
         "block-rules",
         "proxy-rules",
@@ -139,7 +139,7 @@
       ]
     }
   },
-  "builder_commit": "decd61696b2bcef3dbde96a71963247d1bd5b1ff",
+  "builder_commit": "d5263a086d0912d6c40203be384ef0c732147401",
   "compiler": "sing-box version 1.11.5",
   "schema_version": 1
 }

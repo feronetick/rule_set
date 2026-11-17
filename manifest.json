@@ -16,17 +16,17 @@
       "view": "combined"
     },
     "block-rules.srs": {
-      "bytes": 2029791,
+      "bytes": 2063531,
       "category": "block-rules",
       "counts": {
         "domain": 0,
         "domain_keyword": 0,
         "domain_regex": 0,
-        "domain_suffix": 238185,
+        "domain_suffix": 241690,
         "ip_cidr": 0
       },
       "format": "sing-box-srs",
-      "sha256": "3fbb473e1957d0fa920ab209e1369feb5626fdd42a54520bf9ca7275669d0de1",
+      "sha256": "cf0a4af79e41a4f1c3f489ddd49eba1172447ee734ae713f527c9167affbddb6",
       "source_version": 1,
       "view": "combined"
     },
@@ -46,9 +46,9 @@
       "view": "combined"
     },
     "ip-rules.dat": {
-      "bytes": 9266,
+      "bytes": 9136,
       "format": "v2ray-geoip",
-      "sha256": "7f680adb51402d3563ed7e32ad284c8a71622234660d29f60d606aa88b3ff6d6",
+      "sha256": "b25164da3235b97a930126f0a22c1421457ee99afb5b235e08669fcbd24a1765",
       "tags": [
         "proxy-rules"
       ]
@@ -69,47 +69,47 @@
       "view": "combined"
     },
     "proxy-domains.srs": {
-      "bytes": 1090708,
+      "bytes": 1104895,
       "category": "proxy-rules",
       "counts": {
         "domain": 28,
         "domain_keyword": 0,
         "domain_regex": 4,
-        "domain_suffix": 160827,
+        "domain_suffix": 162399,
         "ip_cidr": 0
       },
       "format": "sing-box-srs",
-      "sha256": "fd2bc3de002fe7dcec5b4451a906c4ecab03ed528f13fba5a4fc39bff46a3346",
+      "sha256": "7e54e480901a53c1fe47e3ae5ba11f1ac50a1abe1358d4323940088b248a62f0",
       "source_version": 1,
       "view": "domains-only"
     },
     "proxy-ips.srs": {
-      "bytes": 3820,
+      "bytes": 3778,
       "category": "proxy-rules",
       "counts": {
         "domain": 0,
         "domain_keyword": 0,
         "domain_regex": 0,
         "domain_suffix": 0,
-        "ip_cidr": 925
+        "ip_cidr": 912
       },
       "format": "sing-box-srs",
-      "sha256": "50575def2037773f8dbf85440432b122bdd7b6e41af5d7e179dc7a5996053b0c",
+      "sha256": "29c7985b1a3158b59a0e0bab38ef008678352f7306a2bbe2b583aebf36eda4b7",
       "source_version": 1,
       "view": "ips-only"
     },
     "proxy-rules.srs": {
-      "bytes": 1154166,
+      "bytes": 1166736,
       "category": "proxy-rules",
       "counts": {
         "domain": 28,
         "domain_keyword": 0,
         "domain_regex": 4,
-        "domain_suffix": 160827,
-        "ip_cidr": 925
+        "domain_suffix": 162399,
+        "ip_cidr": 912
       },
       "format": "sing-box-srs",
-      "sha256": "8d82120291b16679ae036da1d2ec843cb23d70bd7f8242d360d11082b1f0a6a5",
+      "sha256": "63194a4b0f0dd6f94e8f8eba426f5c2dc4533faa4e0bfcd9f576872dcea3192f",
       "source_version": 1,
       "view": "combined"
     },
@@ -129,9 +129,9 @@
       "view": "combined"
     },
     "site-rules.dat": {
-      "bytes": 9136393,
+      "bytes": 9272077,
       "format": "v2ray-geosite",
-      "sha256": "8a219f48e4ea88fc25f612f2e0160d6a29e87e3a15d5ce243ab6fed420e3afb2",
+      "sha256": "86d47d84dd4a7719d355f91d5b96d4bbdb47b3d6309ac1e480baacc042d01f21",
       "tags": [
         "block-rules",
         "proxy-rules",
@@ -139,7 +139,7 @@
       ]
     }
   },
-  "builder_commit": "c76656560a618ef845871a5e5601207c52f01618",
+  "builder_commit": "0ae7cf9bc3f03962fb7cbc70e5fd949af5c26467",
   "compiler": "sing-box version 1.11.5",
   "schema_version": 1
 }
